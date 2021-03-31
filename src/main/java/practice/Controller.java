@@ -1,23 +1,24 @@
-package org.example;
-
+package practice;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class H2CreateTable {
+public class Controller {
+
     static final String JDBC_DRIVER = "org.h2.Driver";
     static final String DB_URL = "jdbc:h2:~/test";
-
     //Database credentials
     static final String USER = "sa";
     static final String PASS = "";
 
-    public static void main(String[] args) {
+    /**
+     * Create a connection to a H2 database
+     * @return the created connection object
+     */
+    public static Connection getConnection() {
         Connection conn = null;
-        Statement stmt = null;
-        Scanner scanner = null;
         try {
             //Register JDBC driver
             Class.forName(JDBC_DRIVER);
@@ -25,14 +26,30 @@ public class H2CreateTable {
             //Open a connection
             System.out.println("Connecting to database...");
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            System.out.println("Successfull connection!");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return conn;
+    }
 
-            //Execute a query
-            System.out.println("Creating table in given database...");
+    /**
+     * Create new table in the database
+     * @throws SQLException
+     */
+    public static void createTable() throws SQLException {
+        Connection connection = getConnection();
+        Statement stmt = null;
+        Scanner scanner = null;
+
+        try {
             System.out.println("What should we call the new table?");
             scanner = new Scanner(System.in);
             String tableName = scanner.nextLine();
 
-            stmt = conn.createStatement();
+            stmt = connection.createStatement();
             String sql = "CREATE TABLE IF NOT EXISTS " + tableName +
                     " (id INTEGER not NULL, " +
                     " first_name VARCHAR(255), " +
@@ -41,31 +58,17 @@ public class H2CreateTable {
                     " PRIMARY KEY ( id ))";
             stmt.executeUpdate(sql);
             System.out.println("Created table in given database...");
-
-            //Clean-up environment
-            stmt.close();
-            conn.close();
-        } catch (SQLException se) {
-            //Handle errors for JDBC
-            se.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         } catch (Exception e) {
-            //Handle errors for Class.forName
             e.printStackTrace();
         } finally {
-            scanner.close();
-            //block used to close resources
-            try {
-                if (stmt != null) stmt.close();
-            }
-            catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            } //end finally try
-        } //end try
-        System.out.println("Shutting down!");
+            stmt.close();
+            connection.close();
+        }
+    }
+
+    public static void insertRecord() {
+
     }
 }
